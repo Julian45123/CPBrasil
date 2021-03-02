@@ -6,4 +6,9 @@ productName: CPBrasil
 asar: false
 win:
   publish: github
+linux:
+  publish: github
+  target: deb
+  maintainer: Julian45123
+  icon: ./icon.icns
 electronVersion: 11.3.0

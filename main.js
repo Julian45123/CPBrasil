@@ -6,6 +6,10 @@ const DiscordRPC = require('discord-rpc');
 //const {app, BrowserWindow} = require('electron');
 const path = require('path');
 
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('no-sandbox');
+}
+
 let pluginName
 switch (process.platform) {
   case 'win32':
