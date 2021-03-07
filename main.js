@@ -1,10 +1,6 @@
-const {app, BrowserWindow, dialog, Menu} = require('electron');
-const isDev = require('electron-is-dev');
-const { autoUpdater } = require("electron-updater");
-const DiscordRPC = require('discord-rpc');
-
-//const {app, BrowserWindow} = require('electron');
-const path = require('path');
+const { app, BrowserWindow } = require('electron')
+const path = require('path')
+const DiscordRPC = require('discord-rpc')
 
 let pluginName
 switch (process.platform) {
@@ -18,69 +14,69 @@ switch (process.platform) {
     pluginName = 'flash/libpepflashplayer.so'
     break
 }
-app.commandLine.appendSwitch('ppapi-flash-path', path.join(__dirname, pluginName));
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-autoUpdater.checkForUpdatesAndNotify();
-let mainWindow;
+app.commandLine.appendSwitch('ppapi-flash-path', path.join(__dirname, pluginName))
+app.commandLine.appendSwitch('ppapi-flash-version', '32_32_0_0_303')
 
-/*function clearCache() {
-  mainWindow.webContents.session.clearCache();
-*/
-
-function createWindow () {
-  mainWindow = new BrowserWindow({
+function createWindow() {
+  const mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
-    title: "Connecting...",
+    show: false,
+    title: 'Connecting...',
     icon: __dirname + '/favicon.ico',
+    backgroundColor: '#22a4f3',
     webPreferences: {
-      //preload: path.join(__dirname, 'preload.js'),
-      plugins: true
-    }
-  });
-  mainWindow.maximize();
+      plugins: true,
+    },
+  })
 
-  mainWindow.setMenu(null);
-  //clearCache();
-  mainWindow.loadURL('https://cpbrasil.pw/play/');
-
-  // RICH PRESENCE START
-  const clientId = '815061695831212093'; DiscordRPC.register(clientId); const rpc = new DiscordRPC.Client({ transport: 'ipc' }); const startTimestamp = new Date();
-  rpc.on('ready', () => {
-    rpc.setActivity({
-      details: `Pinguinando`, 
-      state: `cpbrasil.pw`, 
-      startTimestamp, 
-      largeImageKey: `main-logo`//, 
-      //largeImageText: "LARGE IMAGE TEXT", 
-      //smallImageKey: "favicon_512", 
-      //smallImageText: "SMALL IMAGE TEXT"
-    });
-  });
-  rpc.login({ clientId }).catch(console.error);
-
-  //mainWindow.webContents.openDevTools();
-
-  mainWindow.on('closed', function () {
-    mainWindow = null
-  });
+  mainWindow.loadURL('https://cpbrasil.pw/play/').then(() => {
+    mainWindow.maximize()
+    mainWindow.setMenu(null)
+    mainWindow.show()
+  })
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(() => {
+  createWindow()
+})
 
 app.on('window-all-closed', function () {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') app.quit();
-});
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
 
 app.on('activate', function () {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow();
-});
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow()
+  }
+})
 
+const clientId = '815061695831212093'
+const startTimestamp = new Date()
+const rpc = new DiscordRPC.Client({ transport: 'ipc' })
 
-//setInterval(clearCache, 1000*60*5);
+async function setActivity() {
+  if (!rpc) {
+    return
+  }
+
+  await rpc.setActivity({
+    details: `Pinguinando`,
+    state: `cpbrasil.pw`,
+    startTimestamp,
+    largeImageKey: `main-logo`,
+  })
+}
+
+rpc.on('ready', async () => {
+  await setActivity()
+
+  setInterval(() => {
+    setActivity()
+  }, 15e3)
+})
+
+rpc.login({ clientId }).catch(console.error)
