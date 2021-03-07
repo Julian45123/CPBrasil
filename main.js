@@ -16,9 +16,10 @@ switch (process.platform) {
     pluginName = 'flash/libpepflashplayer.so'
     break
 }
-app.commandLine.appendSwitch('ppapi-flash-path', path.join(__dirname, pluginName))
 
+app.commandLine.appendSwitch('ppapi-flash-path', path.join(__dirname, pluginName))
 autoUpdater.checkForUpdatesAndNotify()
+
 let mainWindow
 
 function createWindow() {
@@ -31,15 +32,33 @@ function createWindow() {
       plugins: true,
     },
   })
-  mainWindow.maximize()
 
+  mainWindow.maximize()
+  mainWindow.setMenu(null)
+  mainWindow.loadURL('https://cpbrasil.pw/play/')
+}
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1280,
+    height: 720,
+    title: 'Connecting...',
+    icon: __dirname + '/favicon.ico',
+    webPreferences: {
+      plugins: true,
+    },
+  })
+
+  mainWindow.maximize()
   mainWindow.setMenu(null)
   mainWindow.loadURL('https://cpbrasil.pw/play/')
 
   const clientId = '815061695831212093'
   DiscordRPC.register(clientId)
+
   const rpc = new DiscordRPC.Client({ transport: 'ipc' })
   const startTimestamp = new Date()
+
   rpc.on('ready', () => {
     rpc.setActivity({
       details: `Pinguinando`,
@@ -48,6 +67,7 @@ function createWindow() {
       largeImageKey: `main-logo`, //,
     })
   })
+
   rpc.login({ clientId }).catch(console.error)
 
   mainWindow.on('closed', function () {
@@ -58,9 +78,13 @@ function createWindow() {
 app.on('ready', createWindow)
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
 })
 
 app.on('activate', function () {
-  if (mainWindow === null) createWindow()
+  if (mainWindow === null) {
+    createWindow()
+  }
 })
